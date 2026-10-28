@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUR YOL TEKNOLOJİ - Teklif Oluşturucu</title>
+    <!-- Harici PDF ve Excel Üretme Kütüphaneleri -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
         body { background-color: #f3f4f6; padding: 20px; color: #000; }
@@ -13,7 +16,7 @@
         h2 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; color: #1f2937; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #374151; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
         .form-row { display: flex; gap: 10px; }
         .btn { padding: 10px 16px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
         .btn-primary { background-color: #2563eb; color: #fff; }
@@ -21,7 +24,6 @@
         .btn-success { background-color: #16a34a; color: #fff; }
         .btn-success:hover { background-color: #15803d; }
         .btn-danger { background-color: #dc2626; color: #fff; padding: 4px 8px; font-size: 11px; }
-        .btn-danger:hover { background-color: #b91c1c; }
         .action-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
         
         /* A4 Teklif Formu Tasarımı (Birebir İlgili Görsele Sadık) */
@@ -81,15 +83,6 @@
         .footer-logo .logo-arrow { border-top: 13px solid transparent; border-bottom: 13px solid transparent; border-left: 14px solid #0277bd; }
         .footer-logo .logo-text { font-size: 14px; }
         .footer-logo .logo-subtext { font-size: 7.5px; }
-
-        /* Yazdırma / PDF İçin Özel Kurallar */
-        @media print {
-            body { background: none; padding: 0; }
-            .editor-panel, .action-buttons { display: none !important; }
-            .preview-panel { padding: 0; box-shadow: none; background: none; flex: none; width: 100%; }
-            .paper { box-shadow: none; margin: 0; padding: 8mm 10mm; width: 100%; page-break-after: always; }
-            @page { size: A4 portrait; margin: 0; }
-        }
     </style>
 </head>
 <body>
@@ -138,9 +131,7 @@
         </div>
 
         <h2 style="margin-top: 15px;">Ürün / Hizmet Kalemleri</h2>
-        
         <div id="itemsContainer"></div>
-
         <button class="btn btn-primary" onclick="addItem()" style="width: 100%; margin-top: 8px;">+ Yeni Ürün Ekle</button>
     </div>
 
@@ -148,7 +139,7 @@
     <div class="preview-panel">
         <div class="action-buttons">
             <button class="btn btn-success" onclick="downloadPDF()">📄 PDF Olarak İndir</button>
-            <button class="btn btn-primary" onclick="downloadExcel()">📊 Excel (.xls) Olarak İndir</button>
+            <button class="btn btn-primary" onclick="downloadExcel()">📊 Excel Olarak İndir</button>
         </div>
 
         <!-- A4 FORMU -->
@@ -182,7 +173,7 @@
 
             <table class="grid-table">
                 <tr>
-                    <td style="width: 70%;" class="text-center font-bold">ALICI FİRMA</td>
+                    <td style="width: 70%;" class="text-center font-bold" id="lblAliciFirmaCell">ALICI FİRMA</td>
                     <td style="width: 15%;" class="text-center font-bold">TARİH</td>
                     <td style="width: 15%;" class="text-center font-bold" id="lblTarih">28.10.2026</td>
                 </tr>
@@ -229,9 +220,7 @@
                         <th style="width: 13%;">kdv dahil toplam</th>
                     </tr>
                 </thead>
-                <tbody id="productRows">
-                    <!-- Ürünler buraya eklenecek -->
-                </tbody>
+                <tbody id="productRows"></tbody>
             </table>
 
             <table class="totals-table">
@@ -351,6 +340,8 @@
 
     function updateForm() {
         document.getElementById("lblTarih").innerText = document.getElementById("inpTarih").value;
+        const aliciFirma = document.getElementById("inpAliciFirma").value;
+        document.getElementById("lblAliciFirmaCell").innerText = aliciFirma ? `ALICI FİRMA: ${aliciFirma}` : "ALICI FİRMA";
         document.getElementById("lblYetkili").innerText = document.getElementById("inpYetkili").value;
         document.getElementById("lblTelefon").innerText = document.getElementById("inpTelefon").value;
         document.getElementById("lblTeslimYeri").innerText = document.getElementById("inpTeslimYeri").value;
@@ -408,59 +399,71 @@
     }
 
     function downloadPDF() {
-        window.print();
+        const element = document.getElementById('invoicePaper');
+        const opt = {
+            margin:       5,
+            filename:     `Teklif_Formu_${document.getElementById('inpTarih').value.replace(/\./g, '_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().from(element).set(opt).save();
     }
 
     function downloadExcel() {
+        let wb = XLSX.utils.book_new();
+        let wsData = [
+            ["SUR YOL TEKNOLOJİ PAZARLAMA SANAYİ TİCARET LİMİTED ŞİRKETİ", "", "", "", "", ""],
+            ["Sinan Paşa Mah. Süleyman Seba Caddesi No:6 İçkapı:4 / Beşiktaş, İSTANBUL – Türkiye", "", "", "", "", ""],
+            ["E-posta: muhasebe@hilymily.com | Vergi No: 7840728513 (BEŞİKTAŞ)", "", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["ALICI FİRMA: " + (document.getElementById("inpAliciFirma").value || ""), "", "", "TARİH", document.getElementById("inpTarih").value, ""],
+            ["Yetkili", document.getElementById("inpYetkili").value, "", "", "", ""],
+            ["Yetkili Telefonu", document.getElementById("inpTelefon").value, "", "", "", ""],
+            ["Teslim Yeri", document.getElementById("inpTeslimYeri").value, "", "", "", ""],
+            ["Ödeme Yapılacak Tarih", document.getElementById("inpOdemeTarihi").value, "", "", "", ""],
+            ["İlgili Satış Sorumlusu", document.getElementById("inpSatisSorumlusu").value, "", "", "", ""],
+            ["BANKA İBAN BİLGİLERİ", "VAKIF BANK / İMSAN ŞUBESİ - TR94 0001 5001 5800 7322 6926 65", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["No", "ÜRÜN AÇIKLAMASI", "miktar / birim", "kdv dahil birim fiyat TL", "Kdv", "kdv dahil toplam"]
+        ];
+
+        let totalMatrah = 0;
+        let totalKdv = 0;
+        let totalGenel = 0;
+
+        items.forEach((item, index) => {
+            const lineTotal = item.qty * item.price;
+            const matrah = lineTotal / 1.20;
+            const kdv = lineTotal - matrah;
+            totalMatrah += matrah;
+            totalKdv += kdv;
+            totalGenel += lineTotal;
+
+            wsData.push([index + 1, item.desc, `${item.qty} ${item.unit}`, item.price, kdv, lineTotal]);
+        });
+
+        // Boş satırları doldur (12'ye tamamla)
+        for (let i = items.length; i < 12; i++) {
+            wsData.push([i + 1, "", "", "", "", ""]);
+        }
+
+        wsData.push(["", "", "", "", "TOPLAM", totalMatrah]);
+        wsData.push(["", "", "", "", "%20 KDV", "%20 KDV"]);
+        wsData.push(["", "", "", "", "KDV", totalKdv]);
+        wsData.push(["", "", "", "", "TUTAR", totalGenel]);
+        wsData.push(["", "", "", "", "SİPARİŞ ORTALAMA VADE", ""]);
+        wsData.push(["", "", "", "", "", ""]);
+        wsData.push(["ARAÇTA KG BAZINDA OLANLARDA DEĞİŞİKLİK OLABİLİR.", "", "", "", "", ""]);
+        wsData.push(["SADECE NAKİT FİYATIDIR", "", "", "", "", ""]);
+
+        let ws = XLSX.utils.aoa_to_sheet(wsData);
+        XLSX.utils.book_append_sheet(wb, ws, "Teklif Formu");
+        
         const dateStr = document.getElementById("inpTarih").value || "Tarih";
-        const filename = `Teklif_Formu_${dateStr.replace(/\./g, '_')}.xls`;
-
-        let excelHTML = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-            <meta charset="utf-8">
-            <!--[if gte mso 9]>
-            <xml>
-                <x:ExcelWorkbook>
-                    <x:ExcelWorksheets>
-                        <x:ExcelWorksheet>
-                            <x:Name>Teklif Formu</x:Name>
-                            <x:WorksheetOptions>
-                                <x:DisplayGridlines/>
-                            </x:WorksheetOptions>
-                        </x:ExcelWorksheet>
-                    </x:ExcelWorksheets>
-                </x:ExcelWorkbook>
-            </xml>
-            <![endif]-->
-            <style>
-                table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; }
-                td, th { border: 0.5pt solid #000000; padding: 4px; vertical-align: middle; }
-                .bg-yellow { background-color: #FEF08A; font-weight: bold; }
-                .bg-green { background-color: #BBF7D0; font-weight: bold; }
-                .bg-red { background-color: #FF0000; color: #FFFFFF; font-weight: bold; text-align: center; }
-                .bold { font-weight: bold; }
-                .italic { font-style: italic; }
-                .text-right { text-align: right; }
-                .text-center { text-align: center; }
-            </style>
-        </head>
-        <body>
-            ${document.getElementById("invoicePaper").outerHTML}
-        </body>
-        </html>
-        `;
-
-        const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        XLSX.writeFile(wb, `Teklif_Formu_${dateStr.replace(/\./g, '_')}.xlsx`);
     }
 
-    // Uygulamayı Başlat
     renderEditorItems();
     renderPreview();
     updateForm();
