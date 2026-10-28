@@ -20,13 +20,13 @@
         .btn-success { background-color: #16a34a; color: #fff; }
         .btn-danger { background-color: #dc2626; color: #fff; padding: 3px 6px; font-size: 10px; }
         .action-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
-
+        
         /* A4 Teklif Formu Tasarımı */
         .paper { width: 210mm; min-height: 297mm; padding: 10mm 12mm; margin: 0 auto; background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.1); box-sizing: border-box; font-size: 10.5px; line-height: 1.2; position: relative; }
         .top-amber-bar { height: 14px; background-color: #f59e0b; width: 100%; margin-bottom: 6px; }
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
         .header-table td { vertical-align: top; }
-
+        
         .logo-box { display: flex; align-items: center; gap: 5px; }
         .logo-orange { width: 14px; height: 34px; background-color: #e65100; }
         .logo-blue { width: 14px; height: 34px; background-color: #0277bd; }
@@ -37,10 +37,10 @@
         .company-info { text-align: right; font-size: 8.5px; font-weight: bold; }
         .company-name { font-size: 9.5px; font-weight: 900; color: #000; }
         .thick-divider { height: 3px; background-color: #000; margin: 4px 0; }
-
+        
         .grid-table { width: 100%; border-collapse: collapse; margin-bottom: -1px; }
         .grid-table th, .grid-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 9.5px; }
-
+        
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
@@ -49,13 +49,13 @@
         .bg-yellow { background-color: #fef08a !important; font-weight: bold; }
         .bg-green { background-color: #bbf7d0 !important; font-weight: bold; }
         .bg-red { background-color: #ff0000 !important; color: #fff !important; font-weight: bold; text-align: center; }
-
+        
         .arrow-indicator { display: inline-block; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-right: 6px solid #000; margin-right: 4px; }
-
+        
         .product-table { width: 100%; border-collapse: collapse; }
         .product-table th, .product-table td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; }
         .product-table th { background-color: #e5e7eb; font-style: italic; font-weight: bold; }
-
+        
         .totals-table { width: 45%; margin-left: auto; border-collapse: collapse; margin-top: -1px; }
         .totals-table td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; }
 
@@ -283,20 +283,10 @@
         { desc: "FAWORİ OPTİMİX 5 CM 16 DNS MANTOLAMA TAKIM BOYA ASTAR HARİÇ", qty: 7, unit: "M2", price: 390.50 }
     ];
 
-    const KDV_ORANI = 1.20;
-    const MIN_SATIR = 12;
-
-    /* HTML kaçışlama (XSS / bozuk layout engeli) */
     function esc(val) {
-        return String(val ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
+        return String(val ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
-    /* Virgüllü ondalık da kabul eden sayı dönüştürücü */
     function num(val) {
         if (typeof val === "number") return isFinite(val) ? val : 0;
         const n = parseFloat(String(val).replace(",", "."));
@@ -360,22 +350,16 @@
 
     function renderPreview() {
         const tbody = document.getElementById("productRows");
-        let totalMatrah = 0;
-        let totalKdv = 0;
-        let totalGenel = 0;
         let html = "";
+        let totalMatrah = 0, totalKdv = 0, totalGenel = 0;
 
-        /* ÖNEMLİ: Toplamlar artık TÜM ürünler üzerinden hesaplanıyor (eskiden 12 ile sınırlıydı) */
         items.forEach((item, i) => {
-            const qty = num(item.qty);
-            const price = num(item.price);
+            const qty = num(item.qty), price = num(item.price);
             const lineTotal = qty * price;
-            const matrah = lineTotal / KDV_ORANI;
+            const matrah = lineTotal / 1.20;
             const kdv = lineTotal - matrah;
 
-            totalMatrah += matrah;
-            totalKdv += kdv;
-            totalGenel += lineTotal;
+            totalMatrah += matrah; totalKdv += kdv; totalGenel += lineTotal;
 
             html += `
                 <tr>
@@ -389,29 +373,58 @@
             `;
         });
 
-        /* Görsel bütünlük için minimum 12 satıra tamamla (fazla ürünler artık silinmiyor) */
-        for (let i = items.length; i < MIN_SATIR; i++) {
-            html += `
-                <tr>
-                    <td class="text-center">${i + 1}</td>
-                    <td>&nbsp;</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            `;
+        for (let i = items.length; i < 12; i++) {
+            html += `<tr><td class="text-center">${i + 1}</td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>`;
         }
 
         tbody.innerHTML = html;
-
         document.getElementById("lblMatrah").innerText = fmt(totalMatrah);
         document.getElementById("lblKdvTutar").innerText = fmt(totalKdv);
         document.getElementById("lblGenelToplam").innerText = fmt(totalGenel);
     }
 
     function downloadExcel() {
-        const paperHTML = document.getElementById("invoicePaper").outerHTML;
+        // Excel'in tam olarak anlayacağı, görseldeki tasarıma birebir uygun saf tablo yapısı oluşturuyoruz.
+        const tarih = esc(document.getElementById("inpTarih").value);
+        const aliciFirma = esc(document.getElementById("inpAliciFirma").value);
+        const yetkili = esc(document.getElementById("inpYetkili").value);
+        const telefon = esc(document.getElementById("inpTelefon").value);
+        const teslimYeri = esc(document.getElementById("inpTeslimYeri").value);
+        const odemeTarihi = esc(document.getElementById("inpOdemeTarihi").value);
+        const satisSorumlusu = esc(document.getElementById("inpSatisSorumlusu").value);
+
+        let totalMatrah = 0, totalKdv = 0, totalGenel = 0;
+        let productRowsExcel = "";
+
+        for (let i = 0; i < Math.max(items.length, 12); i++) {
+            if (i < items.length) {
+                const item = items[i];
+                const qty = num(item.qty), price = num(item.price);
+                const lineTotal = qty * price;
+                const matrah = lineTotal / 1.20;
+                const kdv = lineTotal - matrah;
+
+                totalMatrah += matrah; totalKdv += kdv; totalGenel += lineTotal;
+
+                productRowsExcel += `
+                    <tr>
+                        <td style="text-align:center;">${i + 1}</td>
+                        <td>${esc(item.desc)}</td>
+                        <td style="text-align:center;">${qty} ${esc(item.unit)}</td>
+                        <td style="text-align:right;">${fmt(price)}</td>
+                        <td style="text-align:right;">${fmt(kdv)}</td>
+                        <td style="text-align:right;">${fmt(lineTotal)}</td>
+                    </tr>`;
+            } else {
+                productRowsExcel += `
+                    <tr>
+                        <td style="text-align:center;">${i + 1}</td>
+                        <td>&nbsp;</td><td></td><td></td><td></td><td></td>
+                    </tr>`;
+            }
+        }
+
+        // Excel sayfasına özel HTML şablonu
         const excelTemplate = `
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head>
@@ -422,39 +435,144 @@
                         <x:ExcelWorksheets>
                             <x:ExcelWorksheet>
                                 <x:Name>Teklif Formu</x:Name>
-                                <x:WorksheetOptions>
-                                    <x:DisplayGridlines/>
-                                </x:WorksheetOptions>
+                                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
                             </x:ExcelWorksheet>
                         </x:ExcelWorksheets>
                     </x:ExcelWorkbook>
                 </xml>
                 <![endif]-->
                 <style>
-                    table { border-collapse: collapse; width: 100%; }
-                    td, th { border: 1px solid #000000; padding: 4px; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; }
-                    .bg-yellow { background-color: #FEF08A; font-weight: bold; }
-                    .bg-green { background-color: #BBF7D0; font-weight: bold; }
-                    .bg-red { background-color: #FF0000; color: #FFFFFF; font-weight: bold; text-align: center; }
-                    .text-center { text-align: center; }
-                    .text-right { text-align: right; }
-                    .font-bold { font-weight: bold; }
-                    .italic { font-style: italic; }
+                    table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 10pt; }
+                    td, th { border: 1px solid #000000; padding: 3px 5px; mso-number-format:"\\@"; vertical-align: middle; }
+                    .no-border { border: none !important; }
+                    .bg-yellow { background-color: #fef08a; font-weight: bold; }
+                    .bg-green { background-color: #bbf7d0; font-weight: bold; }
+                    .bg-red { background-color: #ff0000; color: #ffffff; font-weight: bold; text-align: center; }
+                    .bg-gray { background-color: #e5e7eb; font-style: italic; font-weight: bold; }
                 </style>
             </head>
             <body>
-                ${paperHTML}
+                <table>
+                    <!-- Üst Turuncu Bar -->
+                    <tr><td colspan="6" class="no-border" style="background-color: #f59e0b; height: 15px;"></td></tr>
+                    
+                    <!-- Logo ve Firma Bilgileri -->
+                    <tr>
+                        <td colspan="3" class="no-border" style="vertical-align: middle;">
+                            <span style="font-size: 22pt; font-weight: 900; color: #1a237e; font-family: 'Arial Black', Arial;">SUR YOL</span><br>
+                            <span style="font-size: 8pt; color: #757575; font-weight: bold; letter-spacing: 0.5px;">TEKNOLOJİ PAZARLAMA</span>
+                        </td>
+                        <td colspan="3" class="no-border" style="text-align: right; font-size: 8pt; font-weight: bold;">
+                            <span style="font-size: 9pt; font-weight: 900;">SUR YOL TEKNOLOJİ PAZARLAMA SANAYİ TİCARET LİMİTED ŞİRKETİ</span><br>
+                            <span style="font-style: italic;">Sinan Paşa Mah. Süleyman Seba Caddesi No:6 İçkapı:4 / Beşiktaş, İSTANBUL – Türkiye</span><br>
+                            <span style="font-style: italic;">E-posta: muhasebe@hilymily.com | Vergi No: 7840728513 (BEŞİKTAŞ)</span>
+                        </td>
+                    </tr>
+                    
+                    <!-- Kalın Ayırıcı Çizgi -->
+                    <tr><td colspan="6" class="no-border" style="border-top: 3px solid #000; height: 2px;"></td></tr>
+                    
+                    <!-- Alıcı ve Tarih -->
+                    <tr>
+                        <td colspan="4" style="text-align: center; font-weight: bold;">ALICI FİRMA: ${aliciFirma}</td>
+                        <td colspan="1" style="text-align: center; font-weight: bold;">TARİH</td>
+                        <td colspan="1" style="text-align: center; font-weight: bold;">${tarih}</td>
+                    </tr>
+                    
+                    <!-- Detay Bilgileri -->
+                    <tr><td style="font-style: italic;">Yetkili</td><td colspan="5">${yetkili}</td></tr>
+                    <tr><td style="font-style: italic;">Yetkili Telefonu</td><td colspan="5">${telefon}</td></tr>
+                    <tr><td style="font-style: italic;">Teslim Yeri</td><td colspan="5">${teslimYeri}</td></tr>
+                    <tr><td style="font-style: italic;">Ödeme Yapılacak Tarih</td><td colspan="5">${odemeTarihi}</td></tr>
+                    <tr><td style="font-style: italic;">İlgili Satış Sorumlusu</td><td colspan="5">${satisSorumlusu}</td></tr>
+                    
+                    <!-- Banka Bilgileri -->
+                    <tr>
+                        <td style="text-align: center; font-weight: bold;">BANKA İBAN BİLGİLERİ</td>
+                        <td colspan="5" style="text-align: center; font-weight: bold;">VAKIF BANK / İMSAN ŞUBESİ<br>TR94 0001 5001 5800 7322 6926 65</td>
+                    </tr>
+                    
+                    <!-- Ürün Tablosu Başlıkları -->
+                    <tr class="bg-gray">
+                        <td style="text-align: center; width: 40px;">No</td>
+                        <td>ÜRÜN AÇIKLAMASI</td>
+                        <td style="text-align: center; width: 80px;">miktar / birim</td>
+                        <td style="text-align: right; width: 80px;">kdv dahil<br>birim fiyat TL</td>
+                        <td style="text-align: right; width: 70px;">Kdv</td>
+                        <td style="text-align: right; width: 100px;">kdv dahil toplam</td>
+                    </tr>
+                    
+                    <!-- Ürün Satırları (Gelen Veriler) -->
+                    ${productRowsExcel}
+                    
+                    <!-- Toplamlar Tablosu -->
+                    <tr>
+                        <td colspan="4" class="no-border"></td>
+                        <td style="text-align: right; font-weight: bold;">TOPLAM</td>
+                        <td style="text-align: right; font-weight: bold;">${fmt(totalMatrah)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="no-border"></td>
+                        <td style="text-align: right; font-weight: bold;">%20 KDV</td>
+                        <td style="text-align: right; font-weight: bold;">%20</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="no-border"></td>
+                        <td style="text-align: right; font-weight: bold;">KDV TUTARI</td>
+                        <td style="text-align: right; font-weight: bold;">${fmt(totalKdv)}</td>
+                    </tr>
+                    <tr class="bg-yellow">
+                        <td colspan="4" class="no-border"></td>
+                        <td style="text-align: right;">▶ TUTAR</td>
+                        <td style="text-align: right;">${fmt(totalGenel)}</td>
+                    </tr>
+                    <tr class="bg-green">
+                        <td colspan="4" class="no-border"></td>
+                        <td style="text-align: right;">▶ SİPARİŞ ORTALAMA VADE</td>
+                        <td style="text-align: right;"></td>
+                    </tr>
+                    
+                    <!-- Uyarılar -->
+                    <tr><td colspan="6" style="text-align: center; font-weight: bold;">ARAÇTA KG BAZINDA OLANLARDA DEĞİŞİKLİK OLABİLİR.</td></tr>
+                    <tr><td colspan="6" class="bg-red">SADECE NAKİT FİYATIDIR</td></tr>
+                    
+                    <!-- Notlar -->
+                    <tr><td colspan="6" class="no-border" style="font-size: 8pt; font-style: italic;">* Üstte talep etmiş olduğunuz ürün sipariş onayınıza istinaden geçerlidir.</td></tr>
+                    <tr><td colspan="6" class="no-border" style="font-size: 8pt; font-style: italic;">* Onay verilen siparişlerde para iadesi söz konusu olamaz.</td></tr>
+                    <tr><td colspan="6" class="no-border" style="font-size: 8pt; font-style: italic;">* Teklif geçerlilik tarihi bugün saat 17:00 dir.</td></tr>
+                    
+                    <!-- İmza Alanları -->
+                    <tr><td colspan="6" class="no-border" style="height: 15px;"></td></tr>
+                    <tr>
+                        <td colspan="3" class="no-border" style="padding-left: 20px; vertical-align: bottom;">
+                            <span style="font-style: italic; font-weight: bold; font-size: 8pt;">SATICI ONAYI</span><br>
+                            <div style="border: 1px solid #000; height: 40px; width: 80%; margin-top: 5px;"></div>
+                        </td>
+                        <td colspan="3" class="no-border" style="padding-right: 20px; vertical-align: bottom; text-align: right;">
+                            <span style="font-style: italic; font-weight: bold; font-size: 8pt;">ALICI ONAYI</span><br>
+                            <div style="border: 1px solid #000; height: 40px; width: 80%; margin-top: 5px; margin-left: auto;"></div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Alt Logo -->
+                    <tr><td colspan="6" class="no-border" style="height: 20px;"></td></tr>
+                    <tr>
+                        <td colspan="6" class="no-border" style="vertical-align: middle;">
+                            <span style="font-size: 14pt; font-weight: 900; color: #1a237e; font-family: 'Arial Black', Arial;">SUR YOL</span><br>
+                            <span style="font-size: 7pt; color: #757575; font-weight: bold;">TEKNOLOJİ PAZARLAMA</span>
+                        </td>
+                    </tr>
+                </table>
             </body>
             </html>
         `;
 
-        /* UTF-8 BOM: Excel'de Türkçe karakterlerin bozulmasını engeller */
+        // UTF-8 BOM ekleyerek Türkçe karakterlerin Excel'de düzgün görünmesini sağlıyoruz
         const blob = new Blob(["\ufeff" + excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        const dateStr = (document.getElementById("inpTarih").value || "Tarih").replace(/[\/\\.:]/g, "_");
-        a.download = `Teklif_Formu_${dateStr}.xls`;
+        a.download = `Teklif_Formu_${tarih.replace(/[\/\\.:]/g, "_")}.xls`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
