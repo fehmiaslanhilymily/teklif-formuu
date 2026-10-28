@@ -26,14 +26,13 @@
         .btn-danger { background-color: #dc2626; color: #fff; padding: 4px 8px; font-size: 11px; }
         .action-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
         
-        /* A4 Teklif Formu Tasarımı (Birebir İlgili Görsele Sadık) */
+        /* A4 Teklif Formu Tasarımı */
         .paper { width: 210mm; min-height: 297mm; padding: 12mm 15mm; margin: 0 auto; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.15); box-sizing: border-box; font-size: 11px; line-height: 1.2; position: relative; }
         
         .top-amber-bar { height: 16px; background-color: #f59e0b; width: 100%; margin-bottom: 8px; }
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
         .header-table td { vertical-align: top; }
         
-        /* Orijinal Vektörel Logo */
         .logo-box { display: flex; align-items: center; gap: 6px; }
         .logo-orange { width: 16px; height: 38px; background-color: #e65100; }
         .logo-blue { width: 16px; height: 38px; background-color: #0277bd; }
@@ -55,7 +54,6 @@
         .font-bold { font-weight: bold; }
         .italic { font-style: italic; }
 
-        /* Vurgulu Toplam Satırları */
         .bg-yellow { background-color: #fef08a !important; font-weight: bold; }
         .bg-green { background-color: #bbf7d0 !important; font-weight: bold; }
         .bg-red { background-color: #ff0000 !important; color: #fff !important; font-weight: bold; text-align: center; }
@@ -413,18 +411,18 @@
     function downloadExcel() {
         let wb = XLSX.utils.book_new();
         let wsData = [
-            ["SUR YOL TEKNOLOJİ PAZARLAMA SANAYİ TİCARET LİMİTED ŞİRKETİ", "", "", "", "", ""],
-            ["Sinan Paşa Mah. Süleyman Seba Caddesi No:6 İçkapı:4 / Beşiktaş, İSTANBUL – Türkiye", "", "", "", "", ""],
-            ["E-posta: muhasebe@hilymily.com | Vergi No: 7840728513 (BEŞİKTAŞ)", "", "", "", "", ""],
-            ["", "", "", "", "", ""],
-            ["ALICI FİRMA: " + (document.getElementById("inpAliciFirma").value || ""), "", "", "TARİH", document.getElementById("inpTarih").value, ""],
-            ["Yetkili", document.getElementById("inpYetkili").value, "", "", "", ""],
-            ["Yetkili Telefonu", document.getElementById("inpTelefon").value, "", "", "", ""],
-            ["Teslim Yeri", document.getElementById("inpTeslimYeri").value, "", "", "", ""],
-            ["Ödeme Yapılacak Tarih", document.getElementById("inpOdemeTarihi").value, "", "", "", ""],
-            ["İlgili Satış Sorumlusu", document.getElementById("inpSatisSorumlusu").value, "", "", "", ""],
-            ["BANKA İBAN BİLGİLERİ", "VAKIF BANK / İMSAN ŞUBESİ - TR94 0001 5001 5800 7322 6926 65", "", "", "", ""],
-            ["", "", "", "", "", ""],
+            ["SUR YOL TEKNOLOJİ PAZARLAMA SANAYİ TİCARET LİMİTED ŞİRKETİ"],
+            ["Sinan Paşa Mah. Süleyman Seba Caddesi No:6 İçkapı:4 / Beşiktaş, İSTANBUL – Türkiye"],
+            ["E-posta: muhasebe@hilymily.com | Vergi No: 7840728513 (BEŞİKTAŞ)"],
+            [""],
+            ["ALICI FİRMA: " + (document.getElementById("inpAliciFirma").value || ""), "", "", "TARİH", document.getElementById("inpTarih").value],
+            ["Yetkili", document.getElementById("inpYetkili").value],
+            ["Yetkili Telefonu", document.getElementById("inpTelefon").value],
+            ["Teslim Yeri", document.getElementById("inpTeslimYeri").value],
+            ["Ödeme Yapılacak Tarih", document.getElementById("inpOdemeTarihi").value],
+            ["İlgili Satış Sorumlusu", document.getElementById("inpSatisSorumlusu").value],
+            ["BANKA İBAN BİLGİLERİ", "VAKIF BANK / İMSAN ŞUBESİ - TR94 0001 5001 5800 7322 6926 65"],
+            [""],
             ["No", "ÜRÜN AÇIKLAMASI", "miktar / birim", "kdv dahil birim fiyat TL", "Kdv", "kdv dahil toplam"]
         ];
 
@@ -443,7 +441,6 @@
             wsData.push([index + 1, item.desc, `${item.qty} ${item.unit}`, item.price, kdv, lineTotal]);
         });
 
-        // Boş satırları doldur (12'ye tamamla)
         for (let i = items.length; i < 12; i++) {
             wsData.push([i + 1, "", "", "", "", ""]);
         }
@@ -454,10 +451,21 @@
         wsData.push(["", "", "", "", "TUTAR", totalGenel]);
         wsData.push(["", "", "", "", "SİPARİŞ ORTALAMA VADE", ""]);
         wsData.push(["", "", "", "", "", ""]);
-        wsData.push(["ARAÇTA KG BAZINDA OLANLARDA DEĞİŞİKLİK OLABİLİR.", "", "", "", "", ""]);
-        wsData.push(["SADECE NAKİT FİYATIDIR", "", "", "", "", ""]);
+        wsData.push(["ARAÇTA KG BAZINDA OLANLARDA DEĞİŞİKLİK OLABİLİR."]);
+        wsData.push(["SADECE NAKİT FİYATIDIR"]);
 
         let ws = XLSX.utils.aoa_to_sheet(wsData);
+        
+        // Sütun genişliklerini otomatik ve ferah ayarla
+        ws['!cols'] = [
+            { wch: 6 },   // No
+            { wch: 55 },  // Ürün Açıklaması
+            { wch: 18 },  // Miktar / Birim
+            { wch: 22 },  // KDV Dahil Birim Fiyat
+            { wch: 16 },  // KDV
+            { wch: 20 }   // KDV Dahil Toplam
+        ];
+
         XLSX.utils.book_append_sheet(wb, ws, "Teklif Formu");
         
         const dateStr = document.getElementById("inpTarih").value || "Tarih";
