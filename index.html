@@ -20,13 +20,13 @@
         .btn-success { background-color: #16a34a; color: #fff; }
         .btn-danger { background-color: #dc2626; color: #fff; padding: 3px 6px; font-size: 10px; }
         .action-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
-        
+
         /* A4 Teklif Formu Tasarımı */
         .paper { width: 210mm; min-height: 297mm; padding: 10mm 12mm; margin: 0 auto; background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.1); box-sizing: border-box; font-size: 10.5px; line-height: 1.2; position: relative; }
         .top-amber-bar { height: 14px; background-color: #f59e0b; width: 100%; margin-bottom: 6px; }
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
         .header-table td { vertical-align: top; }
-        
+
         .logo-box { display: flex; align-items: center; gap: 5px; }
         .logo-orange { width: 14px; height: 34px; background-color: #e65100; }
         .logo-blue { width: 14px; height: 34px; background-color: #0277bd; }
@@ -37,10 +37,10 @@
         .company-info { text-align: right; font-size: 8.5px; font-weight: bold; }
         .company-name { font-size: 9.5px; font-weight: 900; color: #000; }
         .thick-divider { height: 3px; background-color: #000; margin: 4px 0; }
-        
+
         .grid-table { width: 100%; border-collapse: collapse; margin-bottom: -1px; }
         .grid-table th, .grid-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 9.5px; }
-        
+
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
@@ -49,13 +49,13 @@
         .bg-yellow { background-color: #fef08a !important; font-weight: bold; }
         .bg-green { background-color: #bbf7d0 !important; font-weight: bold; }
         .bg-red { background-color: #ff0000 !important; color: #fff !important; font-weight: bold; text-align: center; }
-        
+
         .arrow-indicator { display: inline-block; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-right: 6px solid #000; margin-right: 4px; }
-        
+
         .product-table { width: 100%; border-collapse: collapse; }
         .product-table th, .product-table td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; }
         .product-table th { background-color: #e5e7eb; font-style: italic; font-weight: bold; }
-        
+
         .totals-table { width: 45%; margin-left: auto; border-collapse: collapse; margin-top: -1px; }
         .totals-table td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; }
 
@@ -75,10 +75,11 @@
         .footer-logo .logo-subtext { font-size: 7px; }
 
         @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: none; padding: 0; }
             .editor-panel, .action-buttons { display: none !important; }
-            .preview-panel { padding: 0; box-shadow: none; background: none; flex: none; width: 100%; }
-            .paper { box-shadow: none; margin: 0; padding: 5mm 8mm; width: 100%; page-break-after: always; }
+            .preview-panel { padding: 0; box-shadow: none; background: none; flex: none; width: 100%; overflow: visible; }
+            .paper { box-shadow: none; margin: 0; padding: 5mm 8mm; width: 100%; min-height: auto; page-break-after: auto; }
             @page { size: A4 portrait; margin: 0; }
         }
     </style>
@@ -125,13 +126,13 @@
 
         <h2>Ürün / Hizmet Kalemleri</h2>
         <div id="itemsContainer"></div>
-        <button class="btn btn-primary" onclick="addItem()" style="width: 100%; margin-top: 6px;">+ Yeni Ürün Ekle</button>
+        <button type="button" class="btn btn-primary" onclick="addItem()" style="width: 100%; margin-top: 6px;">+ Yeni Ürün Ekle</button>
     </div>
 
     <div class="preview-panel">
         <div class="action-buttons">
-            <button class="btn btn-success" onclick="window.print()">📄 PDF Olarak Yazdır / İndir</button>
-            <button class="btn btn-primary" onclick="downloadExcel()">📊 Excel (.xls) Olarak İndir</button>
+            <button type="button" class="btn btn-success" onclick="window.print()">📄 PDF Olarak Yazdır / İndir</button>
+            <button type="button" class="btn btn-primary" onclick="downloadExcel()">📊 Excel (.xls) Olarak İndir</button>
         </div>
 
         <div class="paper" id="invoicePaper">
@@ -220,10 +221,10 @@
                 </tr>
                 <tr>
                     <td class="text-right font-bold">%20 KDV</td>
-                    <td class="text-right font-bold">%20 KDV</td>
+                    <td class="text-right font-bold">%20</td>
                 </tr>
                 <tr>
-                    <td class="text-right font-bold">KDV</td>
+                    <td class="text-right font-bold">KDV TUTARI</td>
                     <td class="text-right font-bold" id="lblKdvTutar">0,00</td>
                 </tr>
                 <tr class="bg-yellow">
@@ -282,38 +283,56 @@
         { desc: "FAWORİ OPTİMİX 5 CM 16 DNS MANTOLAMA TAKIM BOYA ASTAR HARİÇ", qty: 7, unit: "M2", price: 390.50 }
     ];
 
+    const KDV_ORANI = 1.20;
+    const MIN_SATIR = 12;
+
+    /* HTML kaçışlama (XSS / bozuk layout engeli) */
+    function esc(val) {
+        return String(val ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    /* Virgüllü ondalık da kabul eden sayı dönüştürücü */
+    function num(val) {
+        if (typeof val === "number") return isFinite(val) ? val : 0;
+        const n = parseFloat(String(val).replace(",", "."));
+        return isNaN(n) ? 0 : n;
+    }
+
     function fmt(val) {
-        if (isNaN(val) || val === null || val === undefined) return "0,00";
-        return val.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const n = Number(val);
+        if (!isFinite(n)) return "0,00";
+        return n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function renderEditorItems() {
         const container = document.getElementById("itemsContainer");
-        container.innerHTML = "";
-        items.forEach((item, index) => {
-            container.innerHTML += `
-                <div style="border: 1px solid #e5e7eb; padding: 6px; margin-bottom: 6px; border-radius: 4px; background: #fafafa;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-                        <strong style="font-size: 10px;">#${index + 1} Kalem</strong>
-                        <button class="btn btn-danger" onclick="removeItem(${index})">Sil</button>
+        container.innerHTML = items.map((item, index) => `
+            <div style="border: 1px solid #e5e7eb; padding: 6px; margin-bottom: 6px; border-radius: 4px; background: #fafafa;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                    <strong style="font-size: 10px;">#${index + 1} Kalem</strong>
+                    <button type="button" class="btn btn-danger" onclick="removeItem(${index})">Sil</button>
+                </div>
+                <div class="form-group">
+                    <input type="text" placeholder="Ürün Açıklaması" value="${esc(item.desc)}" oninput="items[${index}].desc = this.value; renderPreview();">
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <input type="number" placeholder="Miktar" value="${num(item.qty)}" oninput="items[${index}].qty = num(this.value); renderPreview();">
                     </div>
-                    <div class="form-group">
-                        <input type="text" placeholder="Ürün Açıklaması" value="${item.desc}" oninput="items[${index}].desc = this.value; renderPreview();">
+                    <div class="form-group" style="flex: 1;">
+                        <input type="text" placeholder="Birim" value="${esc(item.unit)}" oninput="items[${index}].unit = this.value; renderPreview();">
                     </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
-                            <input type="number" placeholder="Miktar" value="${item.qty}" oninput="items[${index}].qty = parseFloat(this.value)||0; renderPreview();">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <input type="text" placeholder="Birim" value="${item.unit}" oninput="items[${index}].unit = this.value; renderPreview();">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <input type="number" step="0.01" placeholder="Fiyat" value="${item.price}" oninput="items[${index}].price = parseFloat(this.value)||0; renderPreview();">
-                        </div>
+                    <div class="form-group" style="flex: 1;">
+                        <input type="number" step="0.01" placeholder="Fiyat" value="${num(item.price)}" oninput="items[${index}].price = num(this.value); renderPreview();">
                     </div>
                 </div>
-            `;
-        });
+            </div>
+        `).join("");
     }
 
     function addItem() {
@@ -330,7 +349,7 @@
 
     function updateForm() {
         document.getElementById("lblTarih").innerText = document.getElementById("inpTarih").value;
-        const aliciFirma = document.getElementById("inpAliciFirma").value;
+        const aliciFirma = document.getElementById("inpAliciFirma").value.trim();
         document.getElementById("lblAliciFirmaCell").innerText = aliciFirma ? `ALICI FİRMA: ${aliciFirma}` : "ALICI FİRMA";
         document.getElementById("lblYetkili").innerText = document.getElementById("inpYetkili").value;
         document.getElementById("lblTelefon").innerText = document.getElementById("inpTelefon").value;
@@ -341,47 +360,50 @@
 
     function renderPreview() {
         const tbody = document.getElementById("productRows");
-        tbody.innerHTML = "";
-        
         let totalMatrah = 0;
         let totalKdv = 0;
         let totalGenel = 0;
+        let html = "";
 
-        const maxRows = 12;
-        for (let i = 0; i < maxRows; i++) {
-            if (i < items.length) {
-                const item = items[i];
-                const lineTotal = item.qty * item.price;
-                const matrah = lineTotal / 1.20;
-                const kdv = lineTotal - matrah;
+        /* ÖNEMLİ: Toplamlar artık TÜM ürünler üzerinden hesaplanıyor (eskiden 12 ile sınırlıydı) */
+        items.forEach((item, i) => {
+            const qty = num(item.qty);
+            const price = num(item.price);
+            const lineTotal = qty * price;
+            const matrah = lineTotal / KDV_ORANI;
+            const kdv = lineTotal - matrah;
 
-                totalMatrah += matrah;
-                totalKdv += kdv;
-                totalGenel += lineTotal;
+            totalMatrah += matrah;
+            totalKdv += kdv;
+            totalGenel += lineTotal;
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="text-center">${i + 1}</td>
-                        <td>${item.desc}</td>
-                        <td class="text-center">${item.qty} ${item.unit}</td>
-                        <td class="text-right">${fmt(item.price)}</td>
-                        <td class="text-right">${fmt(kdv)}</td>
-                        <td class="text-right">${fmt(lineTotal)}</td>
-                    </tr>
-                `;
-            } else {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="text-center">${i + 1}</td>
-                        <td>&nbsp;</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                `;
-            }
+            html += `
+                <tr>
+                    <td class="text-center">${i + 1}</td>
+                    <td>${esc(item.desc)}</td>
+                    <td class="text-center">${qty} ${esc(item.unit)}</td>
+                    <td class="text-right">${fmt(price)}</td>
+                    <td class="text-right">${fmt(kdv)}</td>
+                    <td class="text-right">${fmt(lineTotal)}</td>
+                </tr>
+            `;
+        });
+
+        /* Görsel bütünlük için minimum 12 satıra tamamla (fazla ürünler artık silinmiyor) */
+        for (let i = items.length; i < MIN_SATIR; i++) {
+            html += `
+                <tr>
+                    <td class="text-center">${i + 1}</td>
+                    <td>&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            `;
         }
+
+        tbody.innerHTML = html;
 
         document.getElementById("lblMatrah").innerText = fmt(totalMatrah);
         document.getElementById("lblKdvTutar").innerText = fmt(totalKdv);
@@ -426,15 +448,17 @@
             </html>
         `;
 
-        const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        /* UTF-8 BOM: Excel'de Türkçe karakterlerin bozulmasını engeller */
+        const blob = new Blob(["\ufeff" + excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        const dateStr = document.getElementById("inpTarih").value || "Tarih";
-        a.download = `Teklif_Formu_${dateStr.replace(/\./g, '_')}.xls`;
+        const dateStr = (document.getElementById("inpTarih").value || "Tarih").replace(/[\/\\.:]/g, "_");
+        a.download = `Teklif_Formu_${dateStr}.xls`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     renderEditorItems();
