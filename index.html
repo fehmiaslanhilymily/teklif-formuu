@@ -4,50 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUR YOL TEKNOLOJİ - Teklif Oluşturucu</title>
-    <!-- Harici PDF ve Excel Üretme Kütüphaneleri -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
-        body { background-color: #f3f4f6; padding: 20px; color: #000; }
+        body { background-color: #f3f4f6; padding: 15px; color: #000; }
         .app-container { max-width: 1100px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
-        .editor-panel { flex: 1; min-width: 320px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .preview-panel { flex: 1.4; min-width: 340px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow-x: auto; }
-        h2 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; color: #1f2937; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #374151; }
-        .form-group input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
-        .form-row { display: flex; gap: 10px; }
-        .btn { padding: 10px 16px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+        .editor-panel { flex: 1; min-width: 300px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .preview-panel { flex: 1.4; min-width: 320px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; }
+        h2 { font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; color: #1f2937; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 3px; color: #374151; }
+        .form-group input { width: 100%; padding: 7px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; }
+        .form-row { display: flex; gap: 8px; }
+        .btn { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-primary { background-color: #2563eb; color: #fff; }
-        .btn-primary:hover { background-color: #1d4ed8; }
         .btn-success { background-color: #16a34a; color: #fff; }
-        .btn-success:hover { background-color: #15803d; }
-        .btn-danger { background-color: #dc2626; color: #fff; padding: 4px 8px; font-size: 11px; }
-        .action-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-danger { background-color: #dc2626; color: #fff; padding: 3px 6px; font-size: 10px; }
+        .action-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
         
         /* A4 Teklif Formu Tasarımı */
-        .paper { width: 210mm; min-height: 297mm; padding: 12mm 15mm; margin: 0 auto; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.15); box-sizing: border-box; font-size: 11px; line-height: 1.2; position: relative; }
-        
-        .top-amber-bar { height: 16px; background-color: #f59e0b; width: 100%; margin-bottom: 8px; }
-        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+        .paper { width: 210mm; min-height: 297mm; padding: 10mm 12mm; margin: 0 auto; background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.1); box-sizing: border-box; font-size: 10.5px; line-height: 1.2; position: relative; }
+        .top-amber-bar { height: 14px; background-color: #f59e0b; width: 100%; margin-bottom: 6px; }
+        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
         .header-table td { vertical-align: top; }
         
-        .logo-box { display: flex; align-items: center; gap: 6px; }
-        .logo-orange { width: 16px; height: 38px; background-color: #e65100; }
-        .logo-blue { width: 16px; height: 38px; background-color: #0277bd; }
-        .logo-arrow { width: 0; height: 0; border-top: 19px solid transparent; border-bottom: 19px solid transparent; border-left: 20px solid #0277bd; }
-        .logo-text { font-family: 'Arial Black', Gadget, sans-serif; font-weight: 900; font-size: 20px; color: #1a237e; letter-spacing: -0.5px; line-height: 1; }
-        .logo-subtext { font-size: 10px; color: #757575; letter-spacing: 0.5px; font-weight: bold; margin-top: 2px; }
+        .logo-box { display: flex; align-items: center; gap: 5px; }
+        .logo-orange { width: 14px; height: 34px; background-color: #e65100; }
+        .logo-blue { width: 14px; height: 34px; background-color: #0277bd; }
+        .logo-arrow { width: 0; height: 0; border-top: 17px solid transparent; border-bottom: 17px solid transparent; border-left: 18px solid #0277bd; }
+        .logo-text { font-family: 'Arial Black', Gadget, sans-serif; font-weight: 900; font-size: 18px; color: #1a237e; letter-spacing: -0.5px; line-height: 1; }
+        .logo-subtext { font-size: 9px; color: #757575; letter-spacing: 0.5px; font-weight: bold; margin-top: 2px; }
 
-        .company-info { text-align: right; font-size: 9.5px; font-weight: bold; }
-        .company-name { font-size: 10.5px; font-weight: 900; color: #000; }
-        
-        .thick-divider { height: 4px; background-color: #000; margin: 6px 0; }
+        .company-info { text-align: right; font-size: 8.5px; font-weight: bold; }
+        .company-name { font-size: 9.5px; font-weight: 900; color: #000; }
+        .thick-divider { height: 3px; background-color: #000; margin: 4px 0; }
         
         .grid-table { width: 100%; border-collapse: collapse; margin-bottom: -1px; }
-        .grid-table th, .grid-table td { border: 1px solid #000; padding: 3px 5px; font-size: 10px; }
-        .grid-table th { background-color: #e5e7eb; font-weight: bold; text-align: center; }
+        .grid-table th, .grid-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 9.5px; }
         
         .text-center { text-align: center; }
         .text-right { text-align: right; }
@@ -58,38 +50,44 @@
         .bg-green { background-color: #bbf7d0 !important; font-weight: bold; }
         .bg-red { background-color: #ff0000 !important; color: #fff !important; font-weight: bold; text-align: center; }
         
-        .arrow-indicator { display: inline-block; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 7px solid #000; margin-right: 4px; }
+        .arrow-indicator { display: inline-block; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-right: 6px solid #000; margin-right: 4px; }
         
         .product-table { width: 100%; border-collapse: collapse; }
-        .product-table th, .product-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 9.5px; }
+        .product-table th, .product-table td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; }
         .product-table th { background-color: #e5e7eb; font-style: italic; font-weight: bold; }
         
         .totals-table { width: 45%; margin-left: auto; border-collapse: collapse; margin-top: -1px; }
-        .totals-table td { border: 1px solid #000; padding: 2.5px 5px; font-size: 9.5px; }
+        .totals-table td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; }
 
-        .notes-list { list-style: none; padding-left: 0; margin-top: 6px; font-size: 8.5px; font-style: italic; }
-        .notes-list li { margin-bottom: 2px; }
+        .notes-list { list-style: none; padding-left: 0; margin-top: 5px; font-size: 8px; font-style: italic; }
+        .notes-list li { margin-bottom: 1px; }
         .notes-list li::before { content: "* "; font-weight: bold; }
 
-        .signatures-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .signatures-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
         .signatures-table td { width: 50%; vertical-align: top; }
-        .sig-box { width: 80%; border: 2px solid #000; height: 35px; margin-top: 4px; }
+        .sig-box { width: 80%; border: 1.5px solid #000; height: 30px; margin-top: 3px; }
 
-        .footer-logo { margin-top: 25px; display: flex; align-items: center; gap: 5px; }
-        .footer-logo .logo-orange { height: 26px; width: 11px; }
-        .footer-logo .logo-blue { height: 26px; width: 11px; }
-        .footer-logo .logo-arrow { border-top: 13px solid transparent; border-bottom: 13px solid transparent; border-left: 14px solid #0277bd; }
-        .footer-logo .logo-text { font-size: 14px; }
-        .footer-logo .logo-subtext { font-size: 7.5px; }
+        .footer-logo { margin-top: 20px; display: flex; align-items: center; gap: 4px; }
+        .footer-logo .logo-orange { height: 22px; width: 9px; }
+        .footer-logo .logo-blue { height: 22px; width: 9px; }
+        .footer-logo .logo-arrow { border-top: 11px solid transparent; border-bottom: 11px solid transparent; border-left: 12px solid #0277bd; }
+        .footer-logo .logo-text { font-size: 12px; }
+        .footer-logo .logo-subtext { font-size: 7px; }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .editor-panel, .action-buttons { display: none !important; }
+            .preview-panel { padding: 0; box-shadow: none; background: none; flex: none; width: 100%; }
+            .paper { box-shadow: none; margin: 0; padding: 5mm 8mm; width: 100%; page-break-after: always; }
+            @page { size: A4 portrait; margin: 0; }
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- SOL TARAFTAKİ FORM PANELİ -->
     <div class="editor-panel">
         <h2>Teklif Bilgileri Girişi</h2>
-        
         <div class="form-row">
             <div class="form-group" style="flex: 1;">
                 <label>Tarih</label>
@@ -100,7 +98,6 @@
                 <input type="text" id="inpAliciFirma" value="" placeholder="Firma Adı" oninput="updateForm()">
             </div>
         </div>
-
         <div class="form-row">
             <div class="form-group" style="flex: 1;">
                 <label>Yetkili</label>
@@ -111,7 +108,6 @@
                 <input type="text" id="inpTelefon" value="" oninput="updateForm()">
             </div>
         </div>
-
         <div class="form-row">
             <div class="form-group" style="flex: 1;">
                 <label>Teslim Yeri</label>
@@ -122,28 +118,24 @@
                 <input type="text" id="inpOdemeTarihi" value="" oninput="updateForm()">
             </div>
         </div>
-
         <div class="form-group">
             <label>İlgili Satış Sorumlusu</label>
             <input type="text" id="inpSatisSorumlusu" value="" oninput="updateForm()">
         </div>
 
-        <h2 style="margin-top: 15px;">Ürün / Hizmet Kalemleri</h2>
+        <h2>Ürün / Hizmet Kalemleri</h2>
         <div id="itemsContainer"></div>
-        <button class="btn btn-primary" onclick="addItem()" style="width: 100%; margin-top: 8px;">+ Yeni Ürün Ekle</button>
+        <button class="btn btn-primary" onclick="addItem()" style="width: 100%; margin-top: 6px;">+ Yeni Ürün Ekle</button>
     </div>
 
-    <!-- SAĞ TARAFTAKİ ÖNİZLEME PANELİ -->
     <div class="preview-panel">
         <div class="action-buttons">
-            <button class="btn btn-success" onclick="downloadPDF()">📄 PDF Olarak İndir</button>
-            <button class="btn btn-primary" onclick="downloadExcel()">📊 Excel Olarak İndir</button>
+            <button class="btn btn-success" onclick="window.print()">📄 PDF Olarak Yazdır / İndir</button>
+            <button class="btn btn-primary" onclick="downloadExcel()">📊 Excel (.xls) Olarak İndir</button>
         </div>
 
-        <!-- A4 FORMU -->
         <div class="paper" id="invoicePaper">
             <div class="top-amber-bar"></div>
-            
             <table class="header-table">
                 <tr>
                     <td style="width: 50%;">
@@ -244,7 +236,7 @@
                 </tr>
             </table>
 
-            <table class="grid-table" style="margin-top: 8px;">
+            <table class="grid-table" style="margin-top: 6px;">
                 <tr>
                     <td class="text-center font-bold">ARAÇTA KG BAZINDA OLANLARDA DEĞİŞİKLİK OLABİLİR.</td>
                 </tr>
@@ -262,11 +254,11 @@
             <table class="signatures-table">
                 <tr>
                     <td style="padding-left: 20px;">
-                        <div class="italic font-bold" style="font-size: 9px;">SATICI ONAYI</div>
+                        <div class="italic font-bold" style="font-size: 8.5px;">SATICI ONAYI</div>
                         <div class="sig-box"></div>
                     </td>
                     <td style="padding-left: 40px;">
-                        <div class="italic font-bold" style="font-size: 9px; text-align: right; width: 80%;">ALICI ONAYI</div>
+                        <div class="italic font-bold" style="font-size: 8.5px; text-align: right; width: 80%;">ALICI ONAYI</div>
                         <div class="sig-box" style="margin-left: auto;"></div>
                     </td>
                 </tr>
@@ -300,9 +292,9 @@
         container.innerHTML = "";
         items.forEach((item, index) => {
             container.innerHTML += `
-                <div style="border: 1px solid #e5e7eb; padding: 8px; margin-bottom: 8px; border-radius: 4px; background: #fafafa;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <strong style="font-size: 11px;">#${index + 1} Kalem</strong>
+                <div style="border: 1px solid #e5e7eb; padding: 6px; margin-bottom: 6px; border-radius: 4px; background: #fafafa;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                        <strong style="font-size: 10px;">#${index + 1} Kalem</strong>
                         <button class="btn btn-danger" onclick="removeItem(${index})">Sil</button>
                     </div>
                     <div class="form-group">
@@ -313,10 +305,10 @@
                             <input type="number" placeholder="Miktar" value="${item.qty}" oninput="items[${index}].qty = parseFloat(this.value)||0; renderPreview();">
                         </div>
                         <div class="form-group" style="flex: 1;">
-                            <input type="text" placeholder="Birim (M2, ADET)" value="${item.unit}" oninput="items[${index}].unit = this.value; renderPreview();">
+                            <input type="text" placeholder="Birim" value="${item.unit}" oninput="items[${index}].unit = this.value; renderPreview();">
                         </div>
                         <div class="form-group" style="flex: 1;">
-                            <input type="number" step="0.01" placeholder="Fiyat (KDV Dahil)" value="${item.price}" oninput="items[${index}].price = parseFloat(this.value)||0; renderPreview();">
+                            <input type="number" step="0.01" placeholder="Fiyat" value="${item.price}" oninput="items[${index}].price = parseFloat(this.value)||0; renderPreview();">
                         </div>
                     </div>
                 </div>
@@ -396,80 +388,53 @@
         document.getElementById("lblGenelToplam").innerText = fmt(totalGenel);
     }
 
-    function downloadPDF() {
-        const element = document.getElementById('invoicePaper');
-        const opt = {
-            margin:       5,
-            filename:     `Teklif_Formu_${document.getElementById('inpTarih').value.replace(/\./g, '_')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().from(element).set(opt).save();
-    }
-
     function downloadExcel() {
-        let wb = XLSX.utils.book_new();
-        let wsData = [
-            ["SUR YOL TEKNOLOJİ PAZARLAMA SANAYİ TİCARET LİMİTED ŞİRKETİ"],
-            ["Sinan Paşa Mah. Süleyman Seba Caddesi No:6 İçkapı:4 / Beşiktaş, İSTANBUL – Türkiye"],
-            ["E-posta: muhasebe@hilymily.com | Vergi No: 7840728513 (BEŞİKTAŞ)"],
-            [""],
-            ["ALICI FİRMA: " + (document.getElementById("inpAliciFirma").value || ""), "", "", "TARİH", document.getElementById("inpTarih").value],
-            ["Yetkili", document.getElementById("inpYetkili").value],
-            ["Yetkili Telefonu", document.getElementById("inpTelefon").value],
-            ["Teslim Yeri", document.getElementById("inpTeslimYeri").value],
-            ["Ödeme Yapılacak Tarih", document.getElementById("inpOdemeTarihi").value],
-            ["İlgili Satış Sorumlusu", document.getElementById("inpSatisSorumlusu").value],
-            ["BANKA İBAN BİLGİLERİ", "VAKIF BANK / İMSAN ŞUBESİ - TR94 0001 5001 5800 7322 6926 65"],
-            [""],
-            ["No", "ÜRÜN AÇIKLAMASI", "miktar / birim", "kdv dahil birim fiyat TL", "Kdv", "kdv dahil toplam"]
-        ];
+        const paperHTML = document.getElementById("invoicePaper").outerHTML;
+        const excelTemplate = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <!--[if gte mso 9]>
+                <xml>
+                    <x:ExcelWorkbook>
+                        <x:ExcelWorksheets>
+                            <x:ExcelWorksheet>
+                                <x:Name>Teklif Formu</x:Name>
+                                <x:WorksheetOptions>
+                                    <x:DisplayGridlines/>
+                                </x:WorksheetOptions>
+                            </x:ExcelWorksheet>
+                        </x:ExcelWorksheets>
+                    </x:ExcelWorkbook>
+                </xml>
+                <![endif]-->
+                <style>
+                    table { border-collapse: collapse; width: 100%; }
+                    td, th { border: 1px solid #000000; padding: 4px; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; }
+                    .bg-yellow { background-color: #FEF08A; font-weight: bold; }
+                    .bg-green { background-color: #BBF7D0; font-weight: bold; }
+                    .bg-red { background-color: #FF0000; color: #FFFFFF; font-weight: bold; text-align: center; }
+                    .text-center { text-align: center; }
+                    .text-right { text-align: right; }
+                    .font-bold { font-weight: bold; }
+                    .italic { font-style: italic; }
+                </style>
+            </head>
+            <body>
+                ${paperHTML}
+            </body>
+            </html>
+        `;
 
-        let totalMatrah = 0;
-        let totalKdv = 0;
-        let totalGenel = 0;
-
-        items.forEach((item, index) => {
-            const lineTotal = item.qty * item.price;
-            const matrah = lineTotal / 1.20;
-            const kdv = lineTotal - matrah;
-            totalMatrah += matrah;
-            totalKdv += kdv;
-            totalGenel += lineTotal;
-
-            wsData.push([index + 1, item.desc, `${item.qty} ${item.unit}`, item.price, kdv, lineTotal]);
-        });
-
-        for (let i = items.length; i < 12; i++) {
-            wsData.push([i + 1, "", "", "", "", ""]);
-        }
-
-        wsData.push(["", "", "", "", "TOPLAM", totalMatrah]);
-        wsData.push(["", "", "", "", "%20 KDV", "%20 KDV"]);
-        wsData.push(["", "", "", "", "KDV", totalKdv]);
-        wsData.push(["", "", "", "", "TUTAR", totalGenel]);
-        wsData.push(["", "", "", "", "SİPARİŞ ORTALAMA VADE", ""]);
-        wsData.push(["", "", "", "", "", ""]);
-        wsData.push(["ARAÇTA KG BAZINDA OLANLARDA DEĞİŞİKLİK OLABİLİR."]);
-        wsData.push(["SADECE NAKİT FİYATIDIR"]);
-
-        let ws = XLSX.utils.aoa_to_sheet(wsData);
-        
-        // Sütun genişliklerini otomatik ve ferah ayarla
-        ws['!cols'] = [
-            { wch: 6 },   // No
-            { wch: 55 },  // Ürün Açıklaması
-            { wch: 18 },  // Miktar / Birim
-            { wch: 22 },  // KDV Dahil Birim Fiyat
-            { wch: 16 },  // KDV
-            { wch: 20 }   // KDV Dahil Toplam
-        ];
-
-        XLSX.utils.book_append_sheet(wb, ws, "Teklif Formu");
-        
+        const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
         const dateStr = document.getElementById("inpTarih").value || "Tarih";
-        XLSX.writeFile(wb, `Teklif_Formu_${dateStr.replace(/\./g, '_')}.xlsx`);
+        a.download = `Teklif_Formu_${dateStr.replace(/\./g, '_')}.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     renderEditorItems();
